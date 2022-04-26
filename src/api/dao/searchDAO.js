@@ -1,5 +1,5 @@
-import { error } from '../../utils/logger.js';
-import { dbName } from '../../utils/config.js';
+import { error } from '../../utils/logger';
+import { dbName } from '../../utils/config';
 
 let progressions;
 let collections;

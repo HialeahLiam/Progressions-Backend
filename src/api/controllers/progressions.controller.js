@@ -1,7 +1,8 @@
 import ProgressionsDAO from '../dao/progressionsDAO.js';
+import { info, error } from '../../utils/logger';
 
 export default class ProgressionsController {
-  static async apiGetPublicProgressionS(req, res, next) {
+  static async apiGetPublicProgressions(req, res, next) {
     const PROGRESSION_PER_PAGE = 20;
     const { progressionsList, totalNumProgs } = await ProgressionsDAO.getProgressions();
     const body = {
@@ -12,5 +13,11 @@ export default class ProgressionsController {
       total_results: totalNumProgs,
     };
     res.json(body);
+  }
+
+  static async apiCreateProgression(req, res, next) {
+    const collectionId = req.query.collection;
+    info(collectionId);
+    res.status(200).end();
   }
 }

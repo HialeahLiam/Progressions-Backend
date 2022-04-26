@@ -1,8 +1,10 @@
 import { Router } from 'express';
-import ProgessionsCtrl from '../controllers/progressions.controller';
+import ProgressionsCtrl from '../controllers/progressions.controller';
 
 const router = new Router();
 
-router.get('/', ProgessionsCtrl.apiGetPublicProgressionS);
+router.get('/', ProgressionsCtrl.apiGetPublicProgressions);
+
+router.post('/', ProgressionsCtrl.apiCreateProgression);
 
 export default router;

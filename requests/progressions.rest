@@ -1,1 +1,5 @@
 GET http://localhost:3000/api/v1/progressions
+
+###
+
+POST http://localhost:3000/api/v1/progressions?collection=liam

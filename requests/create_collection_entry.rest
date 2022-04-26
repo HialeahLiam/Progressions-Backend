@@ -11,7 +11,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:3000/api/v1/collections/64fb0258b94cce7e61ec136/entries
+POST http://localhost:3000/api/v1/collections/64fb0258b94cce7e61ec136
 Content-Type: application/json
 
 {

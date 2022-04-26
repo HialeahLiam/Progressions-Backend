@@ -66,6 +66,9 @@ export default class ProgressionsDAO {
     if (filters) {
       const { ownerId = null } = filters;
       query.owner_id = ownerId ? ObjectId(ownerId) : { $exists: false };
+      if (filters.parentId) {
+        query.parent_collection_id = ObjectId(filters.parentId);
+      }
     } else {
       query.owner_id = { $exists: false };
     }

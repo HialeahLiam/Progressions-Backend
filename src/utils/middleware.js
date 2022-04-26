@@ -1,29 +1,30 @@
-import logger from './logger.js'
+import logger from './logger.js';
 
 const requestLogger = (req, res, next) => {
   logger.info('Method', req.method);
   logger.info('Path', req.path);
   logger.info('Body', req.body);
   logger.info('----------------------------------------------------');
-  next()
-}
+  next();
+};
 
 const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'Unknown endpoint'})
-}
+  response.status(404).send({ error: 'Unknown endpoint' });
+};
 
 const errorHandler = (err, req, res, next) => {
-  logger.error(err.message);
-  
+  logger.error('my message:', err.message);
+
   if (err.name === 'BSONTypeError') {
-    res.status(400).send({ error: 'Malformatted ID'})
+    res.status(400).send({ error: 'Malformatted ID' });
   }
 
-    next(err)
-}
+  // TODO prints an object when error is UserException
+  next(err);
+};
 
 export default {
-    requestLogger,
-    unknownEndpoint,
-    errorHandler
-}
+  requestLogger,
+  unknownEndpoint,
+  errorHandler,
+};
