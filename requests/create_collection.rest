@@ -1,0 +1,22 @@
+POST http://localhost:3000/api/v1/users/624f718986668ba49feefbf4/collections/
+Content-Type: application/json
+
+{
+    "title": "Radiohead"
+} 
+
+###
+POST http://localhost:3000/api/v1/users/624f718986668ba49feefbf4/collections/
+Content-Type: application/json
+
+{
+    "title": "Favorites"
+} 
+###
+
+POST http://localhost:3000/api/v1/users/1/collections/
+Content-Type: application/json
+
+{}
+
+###

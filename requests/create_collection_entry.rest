@@ -1,0 +1,24 @@
+POST http://localhost:3000/api/v1/collections/624fb0258b94cce7e61ec136/entries
+Content-Type: application/json
+
+{
+    "entry": {
+        "type": "collection",
+        "collection": {
+            "title": "Karma Police"
+        }
+    }
+}
+
+###
+POST http://localhost:3000/api/v1/collections/64fb0258b94cce7e61ec136/entries
+Content-Type: application/json
+
+{
+    "entry": {
+        "type": "collection",
+        "collection": {
+            "title": "Karma Police"
+        }
+    }
+}

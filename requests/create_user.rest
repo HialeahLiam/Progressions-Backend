@@ -1,0 +1,25 @@
+POST http://localhost:3000/api/v1/users
+Content-Type: application/json
+
+{
+    "username": "HialeahLiam",
+    "email": "lidrovo@gmail.com"
+}
+
+###
+
+POST http://localhost:3000/api/v1/users
+Content-Type: application/json
+
+{
+    "username": "HialeahLiam"
+}
+
+###
+
+POST http://localhost:3000/api/v1/users
+Content-Type: application/json
+
+{
+    "email": "lidrovo@gmail.com"
+}
