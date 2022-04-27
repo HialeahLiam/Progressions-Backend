@@ -1,10 +1,10 @@
-import logger from './logger.js';
+import { info, error } from './logger.js';
 
 const requestLogger = (req, res, next) => {
-  logger.info('Method', req.method);
-  logger.info('Path', req.path);
-  logger.info('Body', req.body);
-  logger.info('----------------------------------------------------');
+  info('Method', req.method);
+  info('Path', req.path);
+  info('Body', req.body);
+  info('----------------------------------------------------');
   next();
 };
 
@@ -13,7 +13,7 @@ const unknownEndpoint = (request, response) => {
 };
 
 const errorHandler = (err, req, res, next) => {
-  logger.error('my message:', err.message);
+  error('my message:', err.message);
 
   if (err.name === 'BSONTypeError') {
     res.status(400).send({ error: 'Malformatted ID' });

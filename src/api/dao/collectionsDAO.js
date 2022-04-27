@@ -5,6 +5,7 @@ import ProgressionsDAO from './progressionsDAO';
 import { UserException } from '../../utils/exceptions';
 
 let collections;
+let progressions;
 
 export default class CollectionsDAO {
   static async injectDB(conn) {
@@ -15,6 +16,56 @@ export default class CollectionsDAO {
       collections = await conn.db(dbName).collection('collections');
     } catch (e) {
       error(`Unable to establish collection handles in collectionsDAO: ${e}`);
+    }
+  }
+
+  static async getEntries(collectionId) {
+    try {
+      let collection = await collections.findOne({ _id: ObjectId(collectionId) });
+      if (collection.entry_type === 'collection') {
+        console.log('collection');
+        const entries = await collections.find({ parent_collection_id: ObjectId(collectionId) });
+        return entries.toArray();
+      }
+      // NOT SURE IF AGGREGATION IS FUNCTIONING CORRECTLY
+      if (collection.entry_type === 'progression') {
+        console.log('progression');
+        collection = await collections.aggregate(
+          [
+            {
+              $match: {
+                _id: new ObjectId('624fb0258b94cce7e61ec136'),
+              },
+            }, {
+              $lookup: {
+                from: 'progressions',
+                let: {
+                  id: '$_id',
+                },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $eq: [
+                          '$parent_collection_id', '$$id',
+                        ],
+                      },
+                    },
+                  },
+                ],
+                as: 'entries',
+              },
+            },
+          ],
+        );
+        return collection.next();
+      }
+      // Collection does not have children and is empty.
+      console.log('empty');
+      return [];
+    } catch (e) {
+      error(e);
+      return [];
     }
   }
 

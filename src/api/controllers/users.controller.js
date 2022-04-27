@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb';
 import UsersDAO from '../dao/usersDAO.js';
 import { error, info } from '../../utils/logger.js';
 

@@ -19,6 +19,8 @@ export default class CollectionsController {
     // console.log(result);
   };
 
+  // TODO: return all descendent collections and progressions as well
+  // not just top level collections.
   static apiGetPublicCollections = async (req, res, next) => {
     let collections;
     try {

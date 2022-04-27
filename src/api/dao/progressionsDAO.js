@@ -1,4 +1,5 @@
-const { ObjectId } = require('bson');
+import { ObjectId } from 'mongodb';
+
 const { info, error } = require('../../utils/logger');
 
 const { dbName } = require('../../utils/config');
