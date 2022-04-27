@@ -1,3 +1,4 @@
+import { error } from '../../utils/logger';
 import CollectionsDAO from '../dao/collectionsDAO';
 
 export default class CollectionsController {
@@ -16,6 +17,16 @@ export default class CollectionsController {
     // const result = await collections.deleteMany(query);
     // console.log('Deleted the following collection documents:');
     // console.log(result);
+  };
+
+  static apiGetPublicCollections = async (req, res, next) => {
+    let collections;
+    try {
+      collections = await CollectionsDAO.getTopLevelPublicCollections();
+      res.json({ collections });
+    } catch (e) {
+      next(e);
+    }
   };
 
   // TODO check user token
@@ -37,8 +48,8 @@ export default class CollectionsController {
       } else if (entry.type === 'progression') {
         collectionResponse = await CollectionsDAO.addProgressionToCollection(id, entry);
       }
-    } catch (error) {
-      next(error);
+    } catch (e) {
+      next(e);
     }
   };
   // ----------------------------------------------------------------

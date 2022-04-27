@@ -18,6 +18,18 @@ export default class CollectionsDAO {
     }
   }
 
+  static async getTopLevelPublicCollections() {
+    try {
+      // Looking for collections without parent_collection_id because top
+      // level collections do not have parents.
+      const cursor = await collections.find({ parent_collection_id: { $exists: false } });
+      return cursor.toArray();
+    } catch (e) {
+      error(e);
+      return [];
+    }
+  }
+
   static async addCollectionToCollection(id, entry) {
     // Check if collection exists in db
     const collection = await collections.findOne(Object(id));

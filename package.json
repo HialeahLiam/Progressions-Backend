@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "NODE_ENV=production node index.js",
     "dev": "NODE_ENV=development nodemon index.js",
-    "test": "NODE_ENV=test jest --verbose"
+    "test": "NODE_ENV=test jest --verbose --runInBand"
   },
   "author": "Liam Idrovo",
   "license": "ISC",
@@ -34,6 +35,6 @@
     "eslint-plugin-import": "^2.26.0",
     "jest": "^28.0.1",
     "nodemon": "^2.0.15",
-    "supertest": "^6.2.2"
+    "supertest": "^6.2.3"
   }
 }

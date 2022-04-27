@@ -17,7 +17,7 @@ app.use(middleware.requestLogger);
 app.use('/api/v1/collections', collections);
 app.use('/api/v1/users', users);
 app.use('/api/v1/progressions', progressions);
-app.use('/api/search', search);
+app.use('/api/v1/search', search);
 
 // Middleware used after path implementations. Called only if request matches no endpoints.
 app.use(middleware.unknownEndpoint);
