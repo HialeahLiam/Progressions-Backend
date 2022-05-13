@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 
 const { info, error } = require('../../utils/logger');
 
-const { dbName } = require('../../utils/config');
+const { dbName, NODE_ENV } = require('../../utils/config');
 
 let progressions;
 
@@ -12,7 +12,9 @@ export default class ProgressionsDAO {
       return;
     }
     try {
-      progressions = await conn.db(dbName).collection('progressions');
+      const name = NODE_ENV === 'test' ? globalThis.__MONGO_DB_NAME__ : dbName;
+      progressions = await conn.db(name).collection('progressions');
+      console.log('PROGRESSIONS INJECTED');
     } catch (e) {
       console.log('error');
       error(`Unable to establish collection handles in progressionsDAO: ${e}`);
@@ -97,6 +99,18 @@ export default class ProgressionsDAO {
         `Unable to convert cursor to array or problem counting documents, ${e}`,
       );
       return { progressionsList: [], totalNumProgressions: 0 };
+    }
+  }
+
+  static async getProgressionsBelongingToCollection(collectionId) {
+    try {
+      const progs = await progressions.find({
+        parent_collection_id: ObjectId(collectionId),
+      }).toArray();
+      return progs;
+    } catch (e) {
+      error(e);
+      return [];
     }
   }
 }

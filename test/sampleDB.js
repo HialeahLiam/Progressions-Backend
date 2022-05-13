@@ -37,12 +37,12 @@ export const progressions = [
     title: 'My Kind of Woman - Verse',
     root: 9,
     mode: 'major',
-    parent_collection_id: collections.find((o) => o.title === 'My Kind of Woman'),
+    parent_collection_id: collections.find((o) => o.title === 'My Kind of Woman')._id,
   },
   {
     title: 'My Kind of Woman - Chorus',
     root: 9,
     mode: 'major',
-    parent_collection_id: collections.find((o) => o.title === 'My Kind of Woman'),
+    parent_collection_id: collections.find((o) => o.title === 'My Kind of Woman')._id,
   },
 ];

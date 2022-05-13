@@ -6,7 +6,6 @@ import ProgressionsDAO from './progressionsDAO';
 import { UserException } from '../../utils/exceptions';
 
 let collections;
-let progressions;
 
 export default class CollectionsDAO {
   static async injectDB(conn) {
@@ -17,7 +16,6 @@ export default class CollectionsDAO {
       // globalThis.__MONGO_DB_NAME__ refers to in-memory db created by @shelf/jest-mongodb
       const name = NODE_ENV === 'test' ? globalThis.__MONGO_DB_NAME__ : dbName;
       collections = await conn.db(name).collection('collections');
-      console.log('COLLECTIONS INJECTED');
     } catch (e) {
       error(`Unable to establish collection handles in collectionsDAO: ${e}`);
     }
@@ -26,37 +24,20 @@ export default class CollectionsDAO {
   static async getEntries(collectionId) {
     try {
       const collection = await collections.findOne({ _id: ObjectId(collectionId) });
-      console.log('Collections from inside DAO:', await collections.find().toArray());
-      console.log('PARENT COLLECTION:', collection);
       if (collection.entry_type === 'collection') {
-        console.log('collection');
         const entries = await collections.find({ parent_collection_id: ObjectId(collectionId) });
         return entries.toArray();
       }
       // NOT SURE IF AGGREGATION IS FUNCTIONING CORRECTLY
       if (collection.entry_type === 'progression') {
-        console.log('Entry type is progression');
-        const entries = await collections.aggregate(
-          [
-            { $match: { _id: new ObjectId(collectionId) } },
-            {
-              $lookup: {
-                from: 'progressions',
-                let: { id: '$_id' },
-                pipeline: [{ $match: { $expr: { $eq: ['$parent_collection_id', '$$id'] } } }],
-                as: 'entries',
-              },
-            },
-          ],
-        );
-        return entries.toArray();
+        return await ProgressionsDAO.getProgressionsBelongingToCollection(collectionId);
       }
       // Collection does not have children and is empty.
       console.log('empty');
-      return ['empty'];
+      return [];
     } catch (e) {
       error(e);
-      return ['error'];
+      return [];
     }
   }
 
