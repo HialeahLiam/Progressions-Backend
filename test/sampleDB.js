@@ -21,12 +21,14 @@ collections.push(
   {
     _id: generateId(),
     title: 'My Kind of Woman',
-    parent_colleciton_id: collections.find((o) => o.title === 'Mac Demarco'),
+    parent_collection_id: collections.find((o) => o.title === 'Mac Demarco'),
+    entry_type: 'progression',
   },
   {
     _id: generateId(),
     title: 'Freaking Out The Neighborhood',
-    parent_colleciton_id: collections.find((o) => o.title === 'Mac Demarco'),
+    parent_collection_id: collections.find((o) => o.title === 'Mac Demarco'),
+    entry_type: 'progression',
   },
 );
 
