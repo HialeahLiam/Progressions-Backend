@@ -1,6 +1,7 @@
 import supertest from 'supertest';
 import app from '../../src/app';
 import CollectionsDAO from '../../src/api/dao/collectionsDAO';
+import ProgressionsDAO from '../../src/api/dao/progressionsDAO';
 import { collections as sampleCollections, progressions as sampleProgressions } from '../sampleDB';
 
 const api = supertest(app);
@@ -18,6 +19,7 @@ beforeAll(async () => {
   connection = await client.connect();
   db = await connection.db(globalThis.__MONGO_DB_NAME__);
   await CollectionsDAO.injectDB(connection);
+  await ProgressionsDAO.injectDB(connection);
 });
 
 beforeEach(async () => {
@@ -50,6 +52,34 @@ describe('getting public collections', () => {
 
   test('collections should contain all descendent collections and progressions', async () => {
     const response = await api.get('/api/v1/collections');
-    expect(0).toBe(1);
+    // console.log(response.body.collections[1].entries[0]);
+    const { collections } = response.body;
+
+    const macDemarco = collections.map(({ title, entries }) => ({ title, entries })).find((c) => c.title === 'Mac Demarco');
+    macDemarco.entries = macDemarco.entries.map(({ title, entries }) => ({ title, entries }));
+    const myKindOfWoman = macDemarco.entries.find((entry) => entry.title === 'My Kind of Woman');
+    myKindOfWoman.entries = myKindOfWoman.entries.map(({ title }) => ({ title }));
+    const expected = {
+      title: 'Mac Demarco',
+      entries: [
+        {
+          title: 'My Kind of Woman',
+          entries: [
+            {
+              title: 'My Kind of Woman - Verse',
+            },
+            {
+              title: 'My Kind of Woman - Chorus',
+            },
+          ],
+        },
+        {
+          title: 'Freaking Out The Neighborhood',
+          entries: [],
+        },
+      ],
+    };
+
+    expect(macDemarco).toEqual(expected);
   });
 });

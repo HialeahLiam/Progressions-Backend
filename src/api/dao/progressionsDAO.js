@@ -14,7 +14,6 @@ export default class ProgressionsDAO {
     try {
       const name = NODE_ENV === 'test' ? globalThis.__MONGO_DB_NAME__ : dbName;
       progressions = await conn.db(name).collection('progressions');
-      console.log('PROGRESSIONS INJECTED');
     } catch (e) {
       console.log('error');
       error(`Unable to establish collection handles in progressionsDAO: ${e}`);

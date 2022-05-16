@@ -25,10 +25,8 @@ export default class CollectionsDAO {
     try {
       const collection = await collections.findOne({ _id: ObjectId(collectionId) });
       if (collection.entry_type === 'collection') {
-        const entries = await collections.find({ parent_collection_id: ObjectId(collectionId) });
-        return entries.toArray();
+        return await collections.find({ parent_collection_id: ObjectId(collectionId) }).toArray();
       }
-      // NOT SURE IF AGGREGATION IS FUNCTIONING CORRECTLY
       if (collection.entry_type === 'progression') {
         return await ProgressionsDAO.getProgressionsBelongingToCollection(collectionId);
       }
@@ -45,14 +43,17 @@ export default class CollectionsDAO {
     try {
       // Looking for collections without parent_collection_id because top
       // level collections do not have parents.
-      const cursor = await collections.find({ parent_collection_id: { $exists: false } });
-      return cursor.toArray();
+      return await collections.find({
+        parent_collection_id: { $exists: false },
+        owner_id: { $exists: false },
+      }).toArray();
     } catch (e) {
       error(e);
       return [];
     }
   }
 
+  // TODO make this method NOT return a response. IMPLEMENT
   static async addCollectionToCollection(id, entry) {
     // Check if collection exists in db
     const collection = await collections.findOne(Object(id));
