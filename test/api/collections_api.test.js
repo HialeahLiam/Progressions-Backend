@@ -1,38 +1,26 @@
 import supertest from 'supertest';
 import app from '../../src/app';
-import CollectionsDAO from '../../src/api/dao/collectionsDAO';
-import ProgressionsDAO from '../../src/api/dao/progressionsDAO';
-import { collections as sampleCollections, progressions as sampleProgressions } from '../sampleDB';
+import {
+  setupDB,
+  populateCollections,
+  clearCollections,
+  closeDB,
+} from '../utils/testing';
 
 const api = supertest(app);
 
-const { MongoClient } = require('mongodb');
-
-let connection;
-let db;
-
 beforeAll(async () => {
-  const client = new MongoClient(globalThis.__MONGO_URI__, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  connection = await client.connect();
-  db = await connection.db(globalThis.__MONGO_DB_NAME__);
-  await CollectionsDAO.injectDB(connection);
-  await ProgressionsDAO.injectDB(connection);
+  await setupDB();
 });
 
 beforeEach(async () => {
-  //   Delete database entries
-  await db.collection('collections').deleteMany();
-  await db.collection('progressions').deleteMany();
-
-  await db.collection('collections').insertMany(sampleCollections);
-  await db.collection('progressions').insertMany(sampleProgressions);
+  await clearCollections();
+  await populateCollections();
 });
 
 afterAll(async () => {
-  await connection.close();
+  // await connection.close();
+  await closeDB();
 });
 
 describe('getting public collections', () => {
