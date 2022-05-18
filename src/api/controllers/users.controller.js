@@ -27,15 +27,13 @@ export class User {
   encoded() {
     console.log('ENCODING');
     const token = jwt.sign(
-      this.toJson(),
+      {
+        // token expires in 4 hours
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 4,
+        ...this.toJson(),
+      },
       process.env.SECRET_KEY,
-      // {
-      //   // token expires in 4 hours
-      //   exp: Math.floor(Date.now() / 1000) + 60 * 60 * 4,
-      // },
     );
-    console.log('token signed');
-    console.log(token);
     return token;
   }
 
@@ -116,7 +114,7 @@ export default class UsersController {
       const user = new User(userFromDB);
 
       res.status(201).json({
-        // auth_token: user.encoded(),
+        auth_token: user.encoded(),
         info: user.toJson(),
       });
     } catch (e) {
@@ -129,26 +127,20 @@ export default class UsersController {
       const { email, password } = req.body;
       const userData = await UsersDAO.getUser(email);
       if (!userData) {
-        console.log('user not found');
         res.status(400).json({ error: 'Account with that email not found.' });
+        return;
       }
 
       const user = new User(userData);
       if (!(await user.comparePassword(password))) {
-        console.log('password incorrect');
         res.status(400).json({ error: 'Incorrect password.' });
+        return;
       }
 
-      console.log('SENDING RESPONSE');
-      console.log(SECRET_KEY);
-      console.log(dbName);
-      console.log(MONGODB_URI);
-      const token = jwt.sign({ name: 'Liam' }, SECRET_KEY);
-      res.status(200).send({
-        ...user.toJson(),
-      });
+      res.json({ auth_token: user.encoded(), info: user.toJson() });
     } catch (e) {
       next(e);
+      // res.status(400).json({ error: e });
     }
   };
 
