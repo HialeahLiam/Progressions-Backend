@@ -47,7 +47,7 @@ describe('getting public collections', () => {
     const response = await api.get('/api/v1/collections');
     const { collections } = response.body;
     const privateCollections = collections.filter((c) => c.owner_id);
-    expect(privateCollections.length).toBe(0);
+    expect(privateCollections).toHaveLength(0);
   });
 
   test('collections should contain all descendent collections and progressions', async () => {
@@ -57,8 +57,13 @@ describe('getting public collections', () => {
 
     const macDemarco = collections.map(({ title, entries }) => ({ title, entries })).find((c) => c.title === 'Mac Demarco');
     macDemarco.entries = macDemarco.entries.map(({ title, entries }) => ({ title, entries }));
-    const myKindOfWoman = macDemarco.entries.find((entry) => entry.title === 'My Kind of Woman');
-    myKindOfWoman.entries = myKindOfWoman.entries.map(({ title }) => ({ title }));
+    macDemarco.entries = macDemarco.entries.map((e) => {
+      e.entries = e.entries.map(({ title }) => ({ title }));
+      const { title, entries } = e;
+      return { title, entries };
+    });
+    // const myKindOfWoman = macDemarco.entries.find((entry) => entry.title === 'My Kind of Woman');
+    // myKindOfWoman.entries = myKindOfWoman.entries.map(({ title }) => ({ title }));
     const expected = {
       title: 'Mac Demarco',
       entries: [
@@ -75,7 +80,11 @@ describe('getting public collections', () => {
         },
         {
           title: 'Freaking Out The Neighborhood',
-          entries: [],
+          entries: [
+            {
+              title: 'Freaking Out The Neighborhood - Intro',
+            },
+          ],
         },
       ],
     };
