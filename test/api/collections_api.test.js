@@ -19,7 +19,6 @@ beforeEach(async () => {
 });
 
 afterAll(async () => {
-  // await connection.close();
   await closeDB();
 });
 

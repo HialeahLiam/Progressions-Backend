@@ -1,3 +1,4 @@
+import { hash } from 'bcrypt';
 import { ObjectId } from 'bson';
 
 const generateId = () => new ObjectId(ObjectId.generate(Date.now() / 1000));
@@ -6,10 +7,14 @@ export const users = [
   {
     _id: generateId(),
     username: 'Liam Idrovo',
+    email: 'liamidrovo@gmail.com',
+    password: hash('password', 10),
   },
   {
     _id: generateId(),
     username: 'Eryck Mercado',
+    email: 'eryckmercado@gmail.com',
+    password: hash('password', 10),
   },
 ];
 
