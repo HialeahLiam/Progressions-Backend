@@ -46,7 +46,7 @@ describe('when there is intially one user in db', () => {
     };
 
     await api
-      .post('/api/v1/users')
+      .post('/api/v1/users/register')
       .send(newUser)
       .expect(201)
       .expect('Content-Type', /application\/json/);
@@ -55,5 +55,13 @@ describe('when there is intially one user in db', () => {
     expect(usersAtEnd).toHaveLength(usersAtStart.length + 1);
     const usernames = usersAtEnd.map((u) => u.username);
     expect(usernames).toContain(newUser.username);
+  });
+
+  test('single user logs in', async () => {
+    await api
+      .post('/api/v1/users/login')
+      .send({ email: 'kurtm@gmail.com', password: 'password' })
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
   });
 });

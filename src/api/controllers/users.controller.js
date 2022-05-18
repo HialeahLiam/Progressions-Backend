@@ -4,6 +4,7 @@ import { hash, compare } from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import UsersDAO from '../dao/usersDAO.js';
 import { error, info } from '../../utils/logger.js';
+import { SECRET_KEY, dbName, MONGODB_URI } from '../../utils/config.js';
 
 export class User {
   constructor({
@@ -54,6 +55,7 @@ export default class UsersController {
       const users = await UsersDAO.getUsers();
       info(users);
     } catch (e) {
+      next(e);
       res.status(500).send({ error: e.message });
     }
   };
@@ -119,6 +121,34 @@ export default class UsersController {
       });
     } catch (e) {
       res.status(500).json({ error: e });
+    }
+  };
+
+  static login = async (req, res, next) => {
+    try {
+      const { email, password } = req.body;
+      const userData = await UsersDAO.getUser(email);
+      if (!userData) {
+        console.log('user not found');
+        res.status(400).json({ error: 'Account with that email not found.' });
+      }
+
+      const user = new User(userData);
+      if (!(await user.comparePassword(password))) {
+        console.log('password incorrect');
+        res.status(400).json({ error: 'Incorrect password.' });
+      }
+
+      console.log('SENDING RESPONSE');
+      console.log(SECRET_KEY);
+      console.log(dbName);
+      console.log(MONGODB_URI);
+      const token = jwt.sign({ name: 'Liam' }, SECRET_KEY);
+      res.status(200).send({
+        ...user.toJson(),
+      });
+    } catch (e) {
+      next(e);
     }
   };
 
