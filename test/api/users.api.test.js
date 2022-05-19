@@ -65,19 +65,42 @@ describe('when there is intially one user in db', () => {
       .expect('Content-Type', /application\/json/);
   });
 
-  test('invalid email', async () => {
-    await api
+  test('login with invalid email', async () => {
+    const response = await api
       .post('/api/v1/users/login')
       .send({ email: 'kurt@gmail.com', password: 'password' })
       .expect(400)
       .expect('Content-Type', /application\/json/);
+
+    expect(response.body).toEqual(expect.objectContaining({
+      error: 'Account with that email not found.',
+    }));
   });
 
-  test('invalid password', async () => {
-    await api
+  test('login with invalid password', async () => {
+    const response = await api
       .post('/api/v1/users/login')
-      .send({ email: 'kurt@gmail.com', password: 'passord' })
+      .send({ email: 'kurtm@gmail.com', password: 'passord' })
       .expect(400)
       .expect('Content-Type', /application\/json/);
+
+    expect(response.body).toEqual(expect.objectContaining({
+      error: 'Incorrect password.',
+    }));
+  });
+});
+
+describe('getting user personal collections', () => {
+    
+  test('print token', async () => {
+    const response = await api
+      .post('/api/v1/users/login')
+      .send({ email: 'liamidrovo@gmail.com', password: 'password' })
+      .expect(200);
+
+    const token = response.body.auth_token;
+    const users = await db.collection('users').find().toArray();
+    console.log(users);
+    console.log(token);
   });
 });

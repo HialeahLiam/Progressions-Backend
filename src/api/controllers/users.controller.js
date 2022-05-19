@@ -25,7 +25,6 @@ export class User {
   }
 
   encoded() {
-    console.log('ENCODING');
     const token = jwt.sign(
       {
         // token expires in 4 hours
@@ -123,9 +122,12 @@ export default class UsersController {
   };
 
   static login = async (req, res, next) => {
+    console.log('LOGGING IN');
     try {
       const { email, password } = req.body;
+      console.log(email, password);
       const userData = await UsersDAO.getUser(email);
+      console.log(userData);
       if (!userData) {
         res.status(400).json({ error: 'Account with that email not found.' });
         return;
@@ -137,6 +139,7 @@ export default class UsersController {
         return;
       }
 
+      console.log(user);
       res.json({ auth_token: user.encoded(), info: user.toJson() });
     } catch (e) {
       next(e);
@@ -144,7 +147,7 @@ export default class UsersController {
     }
   };
 
-  // static getCollections = async (req, res, next) => {
+  static getCollections = async (req, res, next) => {};
   //   try {
   //     const { id } = req.params;
   //     const query = { owner_id: ObjectId(id) };
@@ -157,7 +160,7 @@ export default class UsersController {
   //   }
   // };
 
-  // static createCollection = async (req, res, next) => {
+  static createCollection = async (req, res, next) => {};
   //   try {
   //     const { id } = req.params;
   //     const { username, _id } = await users.findOne(ObjectId(id));

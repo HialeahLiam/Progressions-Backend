@@ -8,13 +8,11 @@ export const users = [
     _id: generateId(),
     username: 'Liam Idrovo',
     email: 'liamidrovo@gmail.com',
-    password: hash('password', 10),
   },
   {
     _id: generateId(),
     username: 'Eryck Mercado',
     email: 'eryckmercado@gmail.com',
-    password: hash('password', 10),
   },
 ];
 

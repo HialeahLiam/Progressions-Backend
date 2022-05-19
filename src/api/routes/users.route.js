@@ -6,8 +6,8 @@ const router = new Router();
 router.route('/').get(UsersCtrl.apiGetUsers);
 router.route('/register').post(UsersCtrl.register);
 router.route('/login').post(UsersCtrl.login);
-// router.route('/:id/collections')
-//   .get(UsersCtrl.getCollections)
-//   .post(UsersCtrl.createCollection);
+router.route('/:id/collections')
+  .get(UsersCtrl.getCollections)
+  .post(UsersCtrl.createCollection);
 
 export default router;

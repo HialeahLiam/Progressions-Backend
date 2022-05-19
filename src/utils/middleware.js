@@ -17,9 +17,9 @@ const errorHandler = (err, req, res, next) => {
 
   if (err.name === 'BSONTypeError') {
     res.status(400).send({ error: 'Malformatted ID' });
+    return;
   }
 
-  // TODO prints an object when error is UserException
   next(err);
 };
 

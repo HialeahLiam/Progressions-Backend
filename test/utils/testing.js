@@ -1,3 +1,4 @@
+import { hash } from 'bcrypt';
 import CollectionsDAO from '../../src/api/dao/collectionsDAO';
 import ProgressionsDAO from '../../src/api/dao/progressionsDAO';
 import UsersDAO from '../../src/api/dao/usersDAO';
@@ -30,7 +31,16 @@ const clearCollections = async () => {
 const populateCollections = async () => {
   await db.collection('collections').insertMany(sampleCollections);
   await db.collection('progressions').insertMany(sampleProgressions);
-  await db.collection('users').insertMany(users);
+  /**
+   * Adding password hash to all user entries. Had to do it this way
+   * because hash() is asynchronous and I couldn't find a way to use it
+   * inside sampleDB
+   */
+  const usersWithPassword = await Promise.all(users.map(async (u) => ({
+    ...u,
+    password: await hash('password', 10),
+  })));
+  await db.collection('users').insertMany(usersWithPassword);
 };
 
 const closeDB = async () => {
