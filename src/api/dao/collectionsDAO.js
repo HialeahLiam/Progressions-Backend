@@ -53,6 +53,20 @@ export default class CollectionsDAO {
     }
   }
 
+  static async getTopLevelUserCollections(userId) {
+    try {
+      // Looking for collections without parent_collection_id because top
+      // level collections do not have parents.
+      return await collections.find({
+        parent_collection_id: { $exists: false },
+        owner_id: ObjectId(userId),
+      }).toArray();
+    } catch (e) {
+      error(e);
+      return [];
+    }
+  }
+
   // TODO make this method NOT return a response. IMPLEMENT
   static async addCollectionToCollection(id, entry) {
     // Check if collection exists in db

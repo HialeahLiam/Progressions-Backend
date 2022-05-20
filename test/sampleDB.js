@@ -20,7 +20,7 @@ export const collections = [
     _id: generateId(),
     title: 'Radiohead',
     entry_type: 'collection',
-    owner_id: users.find(({ username }) => username === 'Eryck Mercado'),
+    owner_id: users.find(({ username }) => username === 'Eryck Mercado')._id,
   },
   {
     _id: generateId(),
@@ -40,7 +40,7 @@ export const collections = [
     _id: generateId(),
     title: 'The Strokes',
     entry_type: 'collection',
-    owner_id: users.find(({ username }) => username === 'Liam Idrovo'),
+    owner_id: users.find(({ username }) => username === 'Liam Idrovo')._id,
   },
 ];
 

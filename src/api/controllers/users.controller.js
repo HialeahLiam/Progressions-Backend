@@ -3,8 +3,9 @@ import { ObjectId } from 'mongodb';
 import { hash, compare } from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import UsersDAO from '../dao/usersDAO.js';
-import { error, info } from '../../utils/logger.js';
-import { SECRET_KEY, dbName, MONGODB_URI } from '../../utils/config.js';
+import CollectionsDAO from '../dao/collectionsDAO.js';
+import { info } from '../../utils/logger.js';
+import getTokenFrom from '../../utils/requests.js';
 
 export class User {
   constructor({
@@ -152,32 +153,37 @@ export default class UsersController {
   static getCollections = async (req, res, next) => {
     try {
       const { id } = req.params;
-      res.json({
-        collections: [
-          {
-            title: 'The Strokes',
-            entry_type: 'collection',
-            entries: [
-              {
-                title: 'Trying Your Luck',
-                entry_type: 'progression',
-                entries: [
-                  {
-                    title: 'Trying Your Luck - Verse',
-                    root: 9,
-                    mode: 'major',
-                  },
-                ],
-              },
-              {
-                title: 'Last Nite',
-                entry_type: 'progression',
-              },
-            ],
-          },
-        ],
-      });
+      const userJwt = getTokenFrom(req);
+      const user = await User.decoded(userJwt);
+      const { error } = user;
+
+      if (error) {
+        res.status(401).json(error);
+        return;
+      }
+
+      if (user._id !== id) {
+        res.status(401).json({ error: 'You do not have access to these collections.' });
+        return;
+      }
+
+      const collections = await CollectionsDAO.getTopLevelUserCollections(id);
+      const queue = [...collections];
+      while (queue.length > 0) {
+        const parent = queue.shift();
+
+        // eslint-disable-next-line no-await-in-loop
+        const children = await CollectionsDAO.getEntries(parent._id.toString());
+
+        parent.entries = children;
+        if (parent.entry_type === 'collection') {
+          queue.push(...children);
+        }
+      }
+
+      res.json({ collections });
     } catch (e) {
+      console.log((e));
       next(e);
     }
   };

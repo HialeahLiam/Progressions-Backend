@@ -24,7 +24,6 @@ export default class CollectionsController {
   // Read https://stackoverflow.com/questions/37576685/using-async-await-with-a-foreach-loop
   // on how to cal getEntries() inside a loop.
   static apiGetPublicCollections = async (req, res, next) => {
-
     let collections;
     try {
       collections = await CollectionsDAO.getTopLevelPublicCollections();

@@ -109,9 +109,10 @@ describe('getting user collections', () => {
     liamId = response.body.info._id;
   });
 
-  test('retrieving collection of logged in user', async () => {
+  test('retrieving collections of logged in user', async () => {
     const response = await api
       .get(`/api/v1/users/${liamId}/collections`)
+      .auth(liamToken, { type: 'bearer' })
       .expect(200);
 
     const { collections } = response.body;
@@ -129,5 +130,20 @@ describe('getting user collections', () => {
         expect.objectContaining({ title: 'Last Nite' }),
       ],
     }));
+  });
+  test('logged in user retrieving collections of other user', async () => {
+    const result = await db.collection('users').findOne({ username: 'Eryck Mercado' });
+    const userId = result._id.toString();
+
+    await api
+      .get(`/api/v1/users/${userId}/collections`)
+      .auth(liamToken, { type: 'bearer' })
+      .expect(401);
+  });
+
+  test('non-logged in user retrieving user collections', async () => {
+    await api
+      .get(`/api/v1/users/${liamId}/collections`)
+      .expect(401);
   });
 });
