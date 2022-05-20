@@ -138,7 +138,7 @@ describe('creating collection entry', () => {
       .post(`/api/v1/collections/${entryParent}`)
       .send({})
       .auth(loggedInUserToken, { type: 'bearer' })
-      .expect(401);
+      .expect(400);
   });
 
   describe('entry\'s parent should be existing collection in user\'s library', () => {
@@ -149,7 +149,7 @@ describe('creating collection entry', () => {
         .post(`/api/v1/collections/${id}`)
         .send({ collection: {} })
         .auth(loggedInUserToken, { type: 'bearer' })
-        .expect(401);
+        .expect(404);
     });
 
     test('parent collection cannot be a public collection', async () => {
@@ -159,7 +159,7 @@ describe('creating collection entry', () => {
         .post(`/api/v1/collections/${id}`)
         .send({ collection: {} })
         .auth(loggedInUserToken, { type: 'bearer' })
-        .expect(401);
+        .expect(404);
     });
   });
 

@@ -132,7 +132,7 @@ describe('getting user collections', () => {
     await api
       .get(`/api/v1/users/${otherUserId}/collections`)
       .auth(loggedInUserToken, { type: 'bearer' })
-      .expect(401);
+      .expect(404);
   });
 
   test('should not retrieve private collections if not logged in', async () => {
@@ -160,7 +160,7 @@ describe('user creating top level collection', () => {
       .post(`api/v1/users/${otherUserId}/collections`)
       .send({ collection: newCollection })
       .auth(loggedInUserToken, { type: 'bearer' })
-      .expect(401);
+      .expect(404);
   });
 
   test('cannot create collection in any library if not logged in', async () => {
