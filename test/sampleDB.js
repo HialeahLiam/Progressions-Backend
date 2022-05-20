@@ -1,4 +1,3 @@
-import { hash } from 'bcrypt';
 import { ObjectId } from 'bson';
 
 const generateId = () => new ObjectId(ObjectId.generate(Date.now() / 1000));

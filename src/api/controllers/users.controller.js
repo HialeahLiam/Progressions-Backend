@@ -8,8 +8,9 @@ import { SECRET_KEY, dbName, MONGODB_URI } from '../../utils/config.js';
 
 export class User {
   constructor({
-    username, email, password, preferences = {},
+    _id, username, email, password, preferences = {},
   } = {}) {
+    this._id = _id.toString();
     this.username = username;
     this.email = email;
     this.password = password;
@@ -17,7 +18,12 @@ export class User {
   }
 
   toJson() {
-    return { username: this.username, email: this.email, preferences: this.preferences };
+    return {
+      _id: this._id,
+      username: this.username,
+      email: this.email,
+      preferences: this.preferences,
+    };
   }
 
   async comparePassword(plainText) {
@@ -122,12 +128,9 @@ export default class UsersController {
   };
 
   static login = async (req, res, next) => {
-    console.log('LOGGING IN');
     try {
       const { email, password } = req.body;
-      console.log(email, password);
       const userData = await UsersDAO.getUser(email);
-      console.log(userData);
       if (!userData) {
         res.status(400).json({ error: 'Account with that email not found.' });
         return;
@@ -139,7 +142,6 @@ export default class UsersController {
         return;
       }
 
-      console.log(user);
       res.json({ auth_token: user.encoded(), info: user.toJson() });
     } catch (e) {
       next(e);
@@ -147,7 +149,38 @@ export default class UsersController {
     }
   };
 
-  static getCollections = async (req, res, next) => {};
+  static getCollections = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      res.json({
+        collections: [
+          {
+            title: 'The Strokes',
+            entry_type: 'collection',
+            entries: [
+              {
+                title: 'Trying Your Luck',
+                entry_type: 'progression',
+                entries: [
+                  {
+                    title: 'Trying Your Luck - Verse',
+                    root: 9,
+                    mode: 'major',
+                  },
+                ],
+              },
+              {
+                title: 'Last Nite',
+                entry_type: 'progression',
+              },
+            ],
+          },
+        ],
+      });
+    } catch (e) {
+      next(e);
+    }
+  };
   //   try {
   //     const { id } = req.params;
   //     const query = { owner_id: ObjectId(id) };
