@@ -11,6 +11,10 @@ import {
 
 const api = supertest(app);
 let db;
+let loggedInUserToken;
+let loggedInUserId;
+
+let otherUserId;
 
 beforeAll(async () => {
   db = await setupDB();
@@ -19,6 +23,16 @@ beforeAll(async () => {
 beforeEach(async () => {
   await clearCollections();
   await populateCollections();
+
+  const response = await api
+    .post('/api/v1/users/login')
+    .send({ email: 'liamidrovo@gmail.com', password: 'password' })
+    .expect(200);
+  loggedInUserToken = response.body.auth_token;
+  loggedInUserId = response.body.info._id;
+
+  const result = await db.collection('users').findOne({ username: 'Eryck Mercado' });
+  otherUserId = result._id.toString();
 });
 
 afterAll(async () => {
@@ -92,27 +106,10 @@ describe('when there is intially one user in db', () => {
 });
 
 describe('getting user collections', () => {
-  let liamToken;
-  let liamId;
-  /**
-   * For some reason if you use beforeAll the users collection isn't populated
-   * and instead you only find the "Kurt Morrissey" user from the pervious
-   * describe block.
-   */
-
-  beforeEach(async () => {
+  test('logged in user can retrieve their collections', async () => {
     const response = await api
-      .post('/api/v1/users/login')
-      .send({ email: 'liamidrovo@gmail.com', password: 'password' })
-      .expect(200);
-    liamToken = response.body.auth_token;
-    liamId = response.body.info._id;
-  });
-
-  test('retrieving collections of logged in user', async () => {
-    const response = await api
-      .get(`/api/v1/users/${liamId}/collections`)
-      .auth(liamToken, { type: 'bearer' })
+      .get(`/api/v1/users/${loggedInUserId}/collections`)
+      .auth(loggedInUserToken, { type: 'bearer' })
       .expect(200);
 
     const { collections } = response.body;
@@ -131,19 +128,53 @@ describe('getting user collections', () => {
       ],
     }));
   });
-  test('logged in user retrieving collections of other user', async () => {
-    const result = await db.collection('users').findOne({ username: 'Eryck Mercado' });
-    const userId = result._id.toString();
-
+  test('should not be able to retrieve collections of other user', async () => {
     await api
-      .get(`/api/v1/users/${userId}/collections`)
-      .auth(liamToken, { type: 'bearer' })
+      .get(`/api/v1/users/${otherUserId}/collections`)
+      .auth(loggedInUserToken, { type: 'bearer' })
       .expect(401);
   });
 
-  test('non-logged in user retrieving user collections', async () => {
+  test('should not retrieve private collections if not logged in', async () => {
     await api
-      .get(`/api/v1/users/${liamId}/collections`)
+      .get(`/api/v1/users/${loggedInUserId}/collections`)
       .expect(401);
+  });
+});
+
+describe('user creating top level collection', () => {
+  const newCollection = {
+    title: 'Paul Simon',
+  };
+
+  test('user should create collection in their library if logged in', async () => {
+    await api
+      .post(`api/v1/users/${loggedInUserId}/collections`)
+      .send({ collection: newCollection })
+      .auth(loggedInUserToken, { type: 'bearer' })
+      .expect(201);
+  });
+
+  test('user should not create collection in other user\'s library', async () => {
+    await api
+      .post(`api/v1/users/${otherUserId}/collections`)
+      .send({ collection: newCollection })
+      .auth(loggedInUserToken, { type: 'bearer' })
+      .expect(401);
+  });
+
+  test('cannot create collection in any library if not logged in', async () => {
+    await api
+      .post(`api/v1/users/${loggedInUserId}/collections`)
+      .send({ collection: newCollection })
+      .expect(401);
+  });
+
+  test('collection should have title', async () => {
+    await api
+      .post(`api/v1/users/${loggedInUserId}/collections`)
+      .send({ })
+      .auth(loggedInUserToken, { type: 'bearer' })
+      .expect(400);
   });
 });

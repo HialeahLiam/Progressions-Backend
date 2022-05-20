@@ -61,13 +61,14 @@ collections.push(
     _id: generateId(),
     title: 'Trying Your Luck',
     parent_collection_id: collections.find((o) => o.title === 'The Strokes')._id,
+    owner_id: users.find(({ username }) => username === 'Liam Idrovo')._id,
     entry_type: 'progression',
   },
   {
     _id: generateId(),
     title: 'Last Nite',
     parent_collection_id: collections.find((o) => o.title === 'The Strokes')._id,
-    entry_type: 'progression',
+    owner_id: users.find(({ username }) => username === 'Liam Idrovo')._id,
   },
 );
 
@@ -95,5 +96,6 @@ export const progressions = [
     root: 9,
     mode: 'major',
     parent_collection_id: collections.find((o) => o.title === 'Trying Your Luck')._id,
+    owner_id: users.find(({ username }) => username === 'Liam Idrovo')._id,
   },
 ];
