@@ -7,7 +7,7 @@ router.route('/').get(UsersCtrl.apiGetUsers);
 router.route('/register').post(UsersCtrl.register);
 router.route('/login').post(UsersCtrl.login);
 router.route('/:id/collections')
-  .get(UsersCtrl.getCollections)
-  .post(UsersCtrl.createCollection);
+  .get(UsersCtrl.apiGetCollections)
+  .post(UsersCtrl.apiCreateTopLevelCollection);
 
 export default router;

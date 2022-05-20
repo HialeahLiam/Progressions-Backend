@@ -182,7 +182,11 @@ describe('creating collection entry', () => {
     });
 
     test('parent collection should not contain progressions', async () => {
-
+      await api
+        .post(`/api/v1/collections/${collectionOfProgressions}`)
+        .send({ collection: newCollection })
+        .auth(loggedInUserToken, { type: 'bearer' })
+        .expect(200);
     });
 
     test('collection should have title', async () => {

@@ -2,21 +2,8 @@ import { error } from '../../utils/logger';
 import CollectionsDAO from '../dao/collectionsDAO';
 
 export default class CollectionsController {
-  /**
-   * Might not make sense to make these endpoints since anyone could manipulate
-   * collections in  database. Probably best to place these actions in /users and
-   * use authentication.
-   *
-   * UPDATE: you could use Jwt tokens to get valid user id. Users need valid token
-   * to use these endpoints and their id must batch the _id stored in the collections
-   * they're manipulating.
-   */
-  // ----------------------------------------------------------------
   static apiDeleteCollection = async (req, res) => {
-    // const query = { containsProgressions: { $exists: false } };
-    // const result = await collections.deleteMany(query);
-    // console.log('Deleted the following collection documents:');
-    // console.log(result);
+
   };
 
   // TODO: return all descendent collections and progressions as well
@@ -64,9 +51,10 @@ export default class CollectionsController {
       } else if (entry.type === 'progression') {
         collectionResponse = await CollectionsDAO.addProgressionToCollection(id, entry);
       }
+
+      res.json(collectionResponse);
     } catch (e) {
       next(e);
     }
   };
-  // ----------------------------------------------------------------
 }

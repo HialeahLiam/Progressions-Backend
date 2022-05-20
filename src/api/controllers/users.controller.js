@@ -92,8 +92,8 @@ export default class UsersController {
       }
 
       /**
-     * Read about salt rounds: https://github.com/kelektiv/node.bcrypt.js/#a-note-on-rounds
-     */
+       * Read about salt rounds: https://github.com/kelektiv/node.bcrypt.js/#a-note-on-rounds
+       */
       const saltRounds = 10;
       const passwordHash = await hash(password, saltRounds);
 
@@ -150,7 +150,7 @@ export default class UsersController {
     }
   };
 
-  static getCollections = async (req, res, next) => {
+  static apiGetCollections = async (req, res, next) => {
     try {
       const { id } = req.params;
       const userJwt = getTokenFrom(req);
@@ -187,39 +187,17 @@ export default class UsersController {
       next(e);
     }
   };
-  //   try {
-  //     const { id } = req.params;
-  //     const query = { owner_id: ObjectId(id) };
-  //     const result = await collections.find(query).toArray();
-  //     console.log('Documents retrieved successfully:');
-  //     console.log(result);
-  //     res.json(result);
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // };
+    //   try {
+    //     const { id } = req.params;
+    //     const query = { owner_id: ObjectId(id) };
+    //     const result = await collections.find(query).toArray();
+    //     console.log('Documents retrieved successfully:');
+    //     console.log(result);
+    //     res.json(result);
+    //   } catch (error) {
+    //     next(error);
+    //   }
+    // };
 
-  static createCollection = async (req, res, next) => {};
-  //   try {
-  //     const { id } = req.params;
-  //     const { username, _id } = await users.findOne(ObjectId(id));
-  //     const { title } = req.body;
-
-  //     // check if collection belonging to user with same title already exists
-  //     const userCollections = await collections.find({ owner_id: _id }).toArray();
-  //     if (userCollections.find((e) => e.title === title)) {
-  //       return res.json({ error: `${username} already has a collection titled ${title} in their library.` });
-  //     }
-
-  //     console.log(userCollections);
-
-  //     // add collection to collections
-  //     const result = await collections.insertOne({ title, owner_id: _id, author: username });
-  //     console.log('collections document succesfully created:');
-  //     console.log(result);
-  //     res.json({ success: `${title} collection has been added to ${username}'s library.` });
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // };
+  static apiCreateTopLevelCollection = async (req, res, next) => {};
 }
