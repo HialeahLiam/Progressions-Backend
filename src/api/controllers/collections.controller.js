@@ -3,7 +3,7 @@ import CollectionsDAO from '../dao/collectionsDAO';
 
 export default class CollectionsController {
   static apiDeleteCollection = async (req, res) => {
-
+    res.status(400).end();
   };
 
   // TODO: return all descendent collections and progressions as well

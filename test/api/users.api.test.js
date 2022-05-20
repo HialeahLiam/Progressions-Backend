@@ -149,7 +149,7 @@ describe('user creating top level collection', () => {
 
   test('user should create collection in their library if logged in', async () => {
     await api
-      .post(`api/v1/users/${loggedInUserId}/collections`)
+      .post(`/api/v1/users/${loggedInUserId}/collections`)
       .send({ collection: newCollection })
       .auth(loggedInUserToken, { type: 'bearer' })
       .expect(201);
@@ -157,7 +157,7 @@ describe('user creating top level collection', () => {
 
   test('user should not create collection in other user\'s library', async () => {
     await api
-      .post(`api/v1/users/${otherUserId}/collections`)
+      .post(`/api/v1/users/${otherUserId}/collections`)
       .send({ collection: newCollection })
       .auth(loggedInUserToken, { type: 'bearer' })
       .expect(404);
@@ -165,14 +165,14 @@ describe('user creating top level collection', () => {
 
   test('cannot create collection in any library if not logged in', async () => {
     await api
-      .post(`api/v1/users/${loggedInUserId}/collections`)
+      .post(`/api/v1/users/${loggedInUserId}/collections`)
       .send({ collection: newCollection })
       .expect(401);
   });
 
   test('collection should have title', async () => {
     await api
-      .post(`api/v1/users/${loggedInUserId}/collections`)
+      .post(`/api/v1/users/${loggedInUserId}/collections`)
       .send({ })
       .auth(loggedInUserToken, { type: 'bearer' })
       .expect(400);

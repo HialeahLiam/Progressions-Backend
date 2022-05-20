@@ -44,9 +44,9 @@ export class User {
   }
 
   static async decoded(userJwt) {
-    return jwt.verify(userJwt, process.env.SECRET_KEY, (e, res) => {
-      if (e) {
-        return { e };
+    return jwt.verify(userJwt, process.env.SECRET_KEY, (error, res) => {
+      if (error) {
+        return { error };
       }
       return new User(res);
     });
@@ -163,7 +163,7 @@ export default class UsersController {
       }
 
       if (user._id !== id) {
-        res.status(401).json({ error: 'You do not have access to these collections.' });
+        res.status(404).json({ error: 'You do not have access to these collections.' });
         return;
       }
 
@@ -199,5 +199,7 @@ export default class UsersController {
     //   }
     // };
 
-  static apiCreateTopLevelCollection = async (req, res, next) => {};
+  static apiCreateTopLevelCollection = async (req, res, next) => {
+    res.status(400).end();
+  };
 }
