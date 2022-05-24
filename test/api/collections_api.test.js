@@ -139,7 +139,7 @@ describe('creating collection entry', () => {
     collectionOfCollections = result._id.toString();
   });
 
-  test('request body contains "collection" property containing object', async () => {
+  test('request body contains "entry" key containing object', async () => {
     const res = await api
       .post(`/api/v1/collections/${entryParent}`)
       .send({})
@@ -147,7 +147,7 @@ describe('creating collection entry', () => {
       .expect(400);
 
     const { error } = res.body;
-    expect(error).toBe('Request must contain a "collections" key');
+    expect(error).toBe('Request must contain a "entry" key');
   });
 
   describe('entry\'s parent should be existing collection in user\'s library', () => {
@@ -156,7 +156,7 @@ describe('creating collection entry', () => {
       const id = unauthorizedCollection._id.toString();
       const res = await api
         .post(`/api/v1/collections/${id}`)
-        .send({ collection: {} })
+        .send({ entry: {} })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(404);
 
@@ -170,7 +170,7 @@ describe('creating collection entry', () => {
 
       const res = await api
         .post(`/api/v1/collections/${id}`)
-        .send({ collection: {} })
+        .send({ entry: {} })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(404);
 
@@ -182,7 +182,7 @@ describe('creating collection entry', () => {
   test('user must be logged in', async () => {
     const res = await api
       .post(`/api/v1/collections/${entryParent}`)
-      .send({ collection: {} })
+      .send({ entry: {} })
       .expect(401);
 
     const { error } = res.body;
@@ -195,7 +195,7 @@ describe('creating collection entry', () => {
     test('valid child collection added to collection', async () => {
       const res = await api
         .post(`/api/v1/collections/${collectionOfCollections}`)
-        .send({ collection: newCollection })
+        .send({ entry: newCollection })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(200);
 
@@ -223,7 +223,7 @@ describe('creating collection entry', () => {
     test('parent collection should not contain progressions', async () => {
       const res = await api
         .post(`/api/v1/collections/${collectionOfProgressions}`)
-        .send({ collection: newCollection })
+        .send({ entry: newCollection })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(400);
 
@@ -234,7 +234,7 @@ describe('creating collection entry', () => {
     test('collection should have title', async () => {
       const res = await api
         .post(`/api/v1/collections/${collectionOfCollections}`)
-        .send({ collection: { song: 'Is This It' } })
+        .send({ entry: { song: 'Is This It' } })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(400);
 
@@ -253,7 +253,7 @@ describe('creating collection entry', () => {
     test('valid progression added to user\'s collection', async () => {
       const res = await api
         .post(`/api/v1/collections/${collectionOfProgressions}`)
-        .send({ collection: validProgression })
+        .send({ entry: validProgression })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(200);
 
@@ -282,7 +282,7 @@ describe('creating collection entry', () => {
     test('parent collection should not contain collections', async () => {
       const res = await api
         .post(`/api/v1/collections/${collectionOfCollections}`)
-        .send({ collection: validProgression })
+        .send({ entry: validProgression })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(400);
 
@@ -298,7 +298,7 @@ describe('creating collection entry', () => {
 
       const res = await api
         .post(`/api/v1/collections/${collectionOfProgressions}`)
-        .send({ collection: wrongProgression })
+        .send({ entry: wrongProgression })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(400);
 

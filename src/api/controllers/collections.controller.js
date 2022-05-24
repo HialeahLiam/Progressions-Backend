@@ -26,7 +26,6 @@ export default class CollectionsController {
 
       res.status(200).json({ collections: updatedUserCollections });
     } catch (e) {
-      console.log(e);
       next(e);
     }
   };
@@ -49,7 +48,6 @@ export default class CollectionsController {
       }
       res.json({ collections });
     } catch (e) {
-      console.log(e);
       next(e);
     }
   };
