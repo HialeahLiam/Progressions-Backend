@@ -21,7 +21,7 @@ export default class CollectionsController {
 
       console.log('DELETED');
       console.log(user._id);
-      const updatedUserCollections = await UsersController.apiGetCollections(user._id);
+      const updatedUserCollections = await CollectionsDAO.getUserCollections(id);
       console.log('COLLECTIONS RETRIEVED');
 
       res.status(200).json({ collections: updatedUserCollections });
