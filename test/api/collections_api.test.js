@@ -30,7 +30,7 @@ beforeEach(async () => {
   loggedInUserToken = response.body.auth_token;
   loggedInUserId = response.body.info._id;
 
-  const result = await db.collection('users').findOne({ username: 'Eryck Mercado' });
+  // const result = await db.collection('users').findOne({ username: 'Eryck Mercado' });
   // otherUserId = result._id.toString();
 });
 
@@ -109,11 +109,14 @@ describe('deleting collection', () => {
       .expect(401);
   });
 
-  test('user deletes collection in their library', async () => {
-    await api
+  test('user deletes only collection in their library', async () => {
+    const res = await api
       .delete(`/api/v1/collections/${parentCollectionId}`)
       .auth(loggedInUserToken, { type: 'bearer' })
       .expect(200);
+
+    const { collections } = res.body;
+    expect(collections).toHaveLength(0);
   });
 });
 
@@ -134,67 +137,106 @@ describe('creating collection entry', () => {
   });
 
   test('request body contains "collection" property containing object', async () => {
-    await api
+    const res = await api
       .post(`/api/v1/collections/${entryParent}`)
       .send({})
       .auth(loggedInUserToken, { type: 'bearer' })
       .expect(400);
+
+    const { error } = res.body;
+    expect(error).toBe('Request must contain a "collections" key');
   });
 
   describe('entry\'s parent should be existing collection in user\'s library', () => {
     test('parent collection cannot be in other users\'s library', async () => {
       const unauthorizedCollection = await db.collection('collections').findOne({ title: 'Radiohead' });
       const id = unauthorizedCollection._id.toString();
-      await api
+      const res = await api
         .post(`/api/v1/collections/${id}`)
         .send({ collection: {} })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(404);
+
+      const { error } = res.body;
+      expect(error).toBe('You are trying to edit a collection that does not belong to you.');
     });
 
     test('parent collection cannot be a public collection', async () => {
       const publicCollection = await db.collection('collections').findOne({ title: 'Mac Demarco' });
       const id = publicCollection._id.toString();
-      await api
+
+      const res = await api
         .post(`/api/v1/collections/${id}`)
         .send({ collection: {} })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(404);
+
+      const { error } = res.body;
+      expect(error).toBe('You cannot edit a public collection');
     });
   });
 
   test('user must be logged in', async () => {
-    await api
+    const res = await api
       .post(`/api/v1/collections/${entryParent}`)
       .send({ collection: {} })
       .expect(401);
+
+    const { error } = res.body;
+    expect(error).toBe('You must be logged in.');
   });
 
   describe('creating child collection', () => {
     const newCollection = { title: 'Is This It' };
 
     test('valid child collection added to collection', async () => {
-      await api
+      const res = await api
         .post(`/api/v1/collections/${collectionOfCollections}`)
         .send({ collection: newCollection })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(200);
+
+      const { collections } = res.body;
+      expect(collections).toContainEqual(expect.objectContaining({
+        title: 'The Strokes',
+        entries: [
+          expect.objectContaining({
+            title: 'Trying Your Luck',
+            entries: [
+              expect.objectContaining(
+                { title: 'Trying Your Luck - Verse' },
+              )],
+          }),
+          expect.objectContaining({
+            title: 'Last Nite',
+          }),
+          expect.objectContaining({
+            title: 'Is This It',
+          }),
+        ],
+      }));
     });
 
     test('parent collection should not contain progressions', async () => {
-      await api
+      const res = await api
         .post(`/api/v1/collections/${collectionOfProgressions}`)
         .send({ collection: newCollection })
         .auth(loggedInUserToken, { type: 'bearer' })
-        .expect(200);
+        .expect(400);
+
+      const { error } = res.body;
+      expect(error).toBe('You cannot add a collection to a collection already containing progressions.');
     });
 
     test('collection should have title', async () => {
-      await api
+      const res = await api
         .post(`/api/v1/collections/${collectionOfCollections}`)
         .send({ collection: { song: 'Is This It' } })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(400);
+
+      const { error } = res.body;
+      expect(error).toBe('Your collection needs a title.');
     });
   });
 
@@ -206,19 +248,43 @@ describe('creating collection entry', () => {
     };
 
     test('valid progression added to user\'s collection', async () => {
-      await api
+      const res = await api
         .post(`/api/v1/collections/${collectionOfProgressions}`)
         .send({ collection: validProgression })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(200);
+
+      const { collections } = res.body;
+      expect(collections).toContainEqual(expect.objectContaining({
+        title: 'The Strokes',
+        entries: [
+          expect.objectContaining({
+            title: 'Trying Your Luck',
+            entries: [
+              expect.objectContaining(
+                { title: 'Trying Your Luck - Verse' },
+              )],
+          }),
+          expect.objectContaining({
+            title: 'Last Nite',
+            entries: [
+              expect.objectContaining(
+                { title: 'Last Nite - Chorus' },
+              )],
+          }),
+        ],
+      }));
     });
 
     test('parent collection should not contain collections', async () => {
-      await api
+      const res = await api
         .post(`/api/v1/collections/${collectionOfCollections}`)
         .send({ collection: validProgression })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(400);
+
+      const { error } = res.body;
+      expect(error).toBe('You cannot add a progression to a collection already containing collections.');
     });
 
     test('progression should have title', async () => {
@@ -227,11 +293,14 @@ describe('creating collection entry', () => {
         chords: [[0, 3, 5], [1, 5, 9]],
       };
 
-      await api
+      const res = await api
         .post(`/api/v1/collections/${collectionOfProgressions}`)
         .send({ collection: wrongProgression })
         .auth(loggedInUserToken, { type: 'bearer' })
-        .expect(200);
+        .expect(400);
+
+      const { error } = res.body;
+      expect(error).toBe('Your progression needs a title.');
     });
 
     test('progression should have valid chords', async () => {});
