@@ -36,6 +36,7 @@ export default class UsersDAO {
     // Retrieve the user document corresponding with the user's email.
     return users.findOne({ email });
   }
+  
 
   static async addUser(user) {
     try {

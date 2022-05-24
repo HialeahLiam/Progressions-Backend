@@ -1,15 +1,36 @@
-import { error } from '../../utils/logger';
+import getTokenFrom from '../../utils/requests';
 import CollectionsDAO from '../dao/collectionsDAO';
+import UsersController, { User } from './users.controller';
 
 export default class CollectionsController {
-  static apiDeleteCollection = async (req, res) => {
-    res.status(400).end();
+  static apiDeleteCollection = async (req, res, next) => {
+    try {
+      console.log('CALLED');
+      const { id } = req.params;
+      const userJwt = getTokenFrom(req);
+      const user = await User.decoded(userJwt);
+
+      const { error } = user;
+
+      if (error) {
+        res.status(401).json({ error: error.message });
+        return;
+      }
+
+      await CollectionsDAO.deleteCollection(id);
+
+      console.log('DELETED');
+      console.log(user._id);
+      const updatedUserCollections = await UsersController.apiGetCollections(user._id);
+      console.log('COLLECTIONS RETRIEVED');
+
+      res.status(200).json({ collections: updatedUserCollections });
+    } catch (e) {
+      console.log(e);
+      next(e);
+    }
   };
 
-  // TODO: return all descendent collections and progressions as well
-  // not just top level collections.
-  // Read https://stackoverflow.com/questions/37576685/using-async-await-with-a-foreach-loop
-  // on how to cal getEntries() inside a loop.
   static apiGetPublicCollections = async (req, res, next) => {
     let collections;
     try {
@@ -28,6 +49,7 @@ export default class CollectionsController {
       }
       res.json({ collections });
     } catch (e) {
+      console.log(e);
       next(e);
     }
   };

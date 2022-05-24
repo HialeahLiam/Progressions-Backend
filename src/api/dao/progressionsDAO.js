@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 
-const { info, error } = require('../../utils/logger');
+import { error } from '../../utils/logger';
 
 const { dbName, NODE_ENV } = require('../../utils/config');
 

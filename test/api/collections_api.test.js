@@ -104,9 +104,12 @@ describe('deleting collection', () => {
   });
 
   test('cannot delete collection in any library if user not logged in', async () => {
-    await api
+    const res = await api
       .delete(`/api/v1/collections/${parentCollectionId}`)
       .expect(401);
+
+    const { error } = res.body;
+    expect(error).toBe('jwt must be provided');
   });
 
   test('user deletes only collection in their library', async () => {
@@ -183,7 +186,7 @@ describe('creating collection entry', () => {
       .expect(401);
 
     const { error } = res.body;
-    expect(error).toBe('You must be logged in.');
+    expect(error).toBe('jwt must be provided');
   });
 
   describe('creating child collection', () => {
@@ -303,10 +306,14 @@ describe('creating collection entry', () => {
       expect(error).toBe('Your progression needs a title.');
     });
 
-    test('progression should have valid chords', async () => {});
+    // TODO
+    test('progression should have valid chords', async () => {
+      expect(1).toBe(2);
+    });
 
+    // TODO
     test('progression should have valid root', async () => {
-
+      expect(1).toBe(2);
     });
   });
 });

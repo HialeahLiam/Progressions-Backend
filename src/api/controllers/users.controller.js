@@ -167,19 +167,20 @@ export default class UsersController {
         return;
       }
 
-      const collections = await CollectionsDAO.getTopLevelUserCollections(id);
-      const queue = [...collections];
-      while (queue.length > 0) {
-        const parent = queue.shift();
+      const collections = await CollectionsDAO.getUserCollections(id);
+      // const collections = await CollectionsDAO.getTopLevelUserCollections(id);
+      // const queue = [...collections];
+      // while (queue.length > 0) {
+      //   const parent = queue.shift();
 
-        // eslint-disable-next-line no-await-in-loop
-        const children = await CollectionsDAO.getEntries(parent._id.toString());
+      //   // eslint-disable-next-line no-await-in-loop
+      //   const children = await CollectionsDAO.getEntries(parent._id.toString());
 
-        parent.entries = children;
-        if (parent.entry_type === 'collection') {
-          queue.push(...children);
-        }
-      }
+      //   parent.entries = children;
+      //   if (parent.entry_type === 'collection') {
+      //     queue.push(...children);
+      //   }
+      // }
 
       res.json({ collections });
     } catch (e) {

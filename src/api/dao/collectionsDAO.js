@@ -1,6 +1,5 @@
 import { ObjectId } from 'bson';
-import { CURSOR_FLAGS } from 'mongodb';
-import { info, error } from '../../utils/logger';
+import { error } from '../../utils/logger';
 import { dbName, NODE_ENV } from '../../utils/config';
 import ProgressionsDAO from './progressionsDAO';
 import { UserException } from '../../utils/exceptions';
@@ -53,6 +52,15 @@ export default class CollectionsDAO {
     }
   }
 
+  static async deleteCollection(collectionId) {
+    try {
+      return await collections.deleteOne({ _id: ObjectId(collectionId) });
+    } catch (e) {
+      error(e);
+      return [];
+    }
+  }
+
   static async getTopLevelUserCollections(userId) {
     try {
       // Looking for collections without parent_collection_id because top
@@ -61,6 +69,29 @@ export default class CollectionsDAO {
         parent_collection_id: { $exists: false },
         owner_id: ObjectId(userId),
       }).toArray();
+    } catch (e) {
+      error(e);
+      return [];
+    }
+  }
+
+  static async getUserCollections(userId) {
+    try {
+      const userCollections = await CollectionsDAO.getTopLevelUserCollections(userId);
+      const queue = [...userCollections];
+      while (queue.length > 0) {
+        const parent = queue.shift();
+
+        // eslint-disable-next-line no-await-in-loop
+        const children = await CollectionsDAO.getEntries(parent._id.toString());
+
+        parent.entries = children;
+        if (parent.entry_type === 'collection') {
+          queue.push(...children);
+        }
+      }
+
+      return userCollections;
     } catch (e) {
       error(e);
       return [];
