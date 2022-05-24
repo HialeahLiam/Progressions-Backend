@@ -5,7 +5,6 @@ import UsersController, { User } from './users.controller';
 export default class CollectionsController {
   static apiDeleteCollection = async (req, res, next) => {
     try {
-      console.log('CALLED');
       const { id } = req.params;
       const userJwt = getTokenFrom(req);
       const user = await User.decoded(userJwt);
@@ -19,10 +18,7 @@ export default class CollectionsController {
 
       await CollectionsDAO.deleteCollection(id);
 
-      console.log('DELETED');
-      console.log(user._id);
       const updatedUserCollections = await CollectionsDAO.getUserCollections(id);
-      console.log('COLLECTIONS RETRIEVED');
 
       res.status(200).json({ collections: updatedUserCollections });
     } catch (e) {
@@ -57,6 +53,10 @@ export default class CollectionsController {
     try {
       const { entry } = req.body;
       const { id } = req.params;
+
+      if (!entry) {
+        res.status(400).json({ error: 'Request must contain a "entry" key' });
+      }
 
       let collectionResponse;
 

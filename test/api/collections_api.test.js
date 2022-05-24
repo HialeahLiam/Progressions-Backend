@@ -98,7 +98,7 @@ describe('getting public collections', () => {
 
 describe('deleting collection', () => {
   let parentCollectionId;
-  beforeAll(async () => {
+  beforeEach(async () => {
     const result = await db.collection('collections').findOne({ title: 'The Strokes' });
     parentCollectionId = result._id.toString();
   });
@@ -128,8 +128,10 @@ describe('creating collection entry', () => {
   let collectionOfProgressions;
   let collectionOfCollections;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
+    console.log(await db.collection('collections').find().toArray());
     let result = await db.collection('collections').findOne({ title: 'The Strokes' });
+    console.log(result);
     entryParent = result._id.toString();
 
     result = await db.collection('collections').findOne({ title: 'Last Nite' });
