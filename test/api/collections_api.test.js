@@ -174,7 +174,7 @@ describe('creating collection entry', () => {
       const id = unauthorizedCollection._id.toString();
       const res = await api
         .post(`/api/v1/collections/${id}`)
-        .send({ entry: {} })
+        .send({ entry: {}, type: 'collection' })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(404);
 
@@ -188,7 +188,7 @@ describe('creating collection entry', () => {
 
       const res = await api
         .post(`/api/v1/collections/${id}`)
-        .send({ entry: {} })
+        .send({ entry: {}, type: 'collection' })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(404);
 
@@ -203,35 +203,19 @@ describe('creating collection entry', () => {
     test('valid child collection added to collection', async () => {
       const res = await api
         .post(`/api/v1/collections/${collectionOfCollections}`)
-        .send({ entry: newCollection })
+        .send({ entry: newCollection, type: 'collection' })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(200);
 
-      const { collections } = res.body;
-      expect(collections).toContainEqual(expect.objectContaining({
-        title: 'The Strokes',
-        entries: [
-          expect.objectContaining({
-            title: 'Trying Your Luck',
-            entries: [
-              expect.objectContaining(
-                { title: 'Trying Your Luck - Verse' },
-              )],
-          }),
-          expect.objectContaining({
-            title: 'Last Nite',
-          }),
-          expect.objectContaining({
-            title: 'Is This It',
-          }),
-        ],
-      }));
+      let collection = await db.collection('collections').findOne({title: 'Is This It'})
+      expect(collection).toBeTruthy()
+      expect(collection.parent_collection_id.toString()).toBe(collectionOfCollections) 
     });
 
     test('parent collection should not contain progressions', async () => {
       const res = await api
         .post(`/api/v1/collections/${collectionOfProgressions}`)
-        .send({ entry: newCollection })
+        .send({ entry: newCollection, type: 'collection' })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(400);
 
@@ -242,7 +226,7 @@ describe('creating collection entry', () => {
     test('collection should have title', async () => {
       const res = await api
         .post(`/api/v1/collections/${collectionOfCollections}`)
-        .send({ entry: { song: 'Is This It' } })
+        .send({ entry: { song: 'Is This It' }, type: 'collection' })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(400);
 
@@ -251,7 +235,7 @@ describe('creating collection entry', () => {
     });
   });
 
-  describe('user creating progression', () => {
+  describe('creating child progression', () => {
     const validProgression = {
       title: 'Last Nite - Chorus',
       root: 9,
@@ -261,36 +245,19 @@ describe('creating collection entry', () => {
     test('valid progression added to user\'s collection', async () => {
       const res = await api
         .post(`/api/v1/collections/${collectionOfProgressions}`)
-        .send({ entry: validProgression })
+        .send({ entry: validProgression, type: 'progression' })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(200);
 
-      const { collections } = res.body;
-      expect(collections).toContainEqual(expect.objectContaining({
-        title: 'The Strokes',
-        entries: [
-          expect.objectContaining({
-            title: 'Trying Your Luck',
-            entries: [
-              expect.objectContaining(
-                { title: 'Trying Your Luck - Verse' },
-              )],
-          }),
-          expect.objectContaining({
-            title: 'Last Nite',
-            entries: [
-              expect.objectContaining(
-                { title: 'Last Nite - Chorus' },
-              )],
-          }),
-        ],
-      }));
+     let progression = await db.collection('progressions').findOne({title: 'Last Nite - Chorus'})
+      expect(progression).toBeTruthy()
+      expect(progression.parent_collection_id.toString()).toBe(collectionOfProgressions) 
     });
 
     test('parent collection should not contain collections', async () => {
       const res = await api
         .post(`/api/v1/collections/${collectionOfCollections}`)
-        .send({ entry: validProgression })
+        .send({ entry: validProgression, type: 'progression' })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(400);
 
@@ -306,7 +273,7 @@ describe('creating collection entry', () => {
 
       const res = await api
         .post(`/api/v1/collections/${collectionOfProgressions}`)
-        .send({ entry: wrongProgression })
+        .send({ entry: wrongProgression, type: 'progression' })
         .auth(loggedInUserToken, { type: 'bearer' })
         .expect(400);
 
