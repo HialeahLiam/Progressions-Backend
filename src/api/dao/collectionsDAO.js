@@ -1,4 +1,6 @@
+/* eslint-disable no-await-in-loop */
 import { ObjectId } from 'bson';
+import { cookie } from 'express/lib/response';
 import { error } from '../../utils/logger';
 import { dbName, NODE_ENV } from '../../utils/config';
 import ProgressionsDAO from './progressionsDAO';
@@ -30,11 +32,10 @@ export default class CollectionsDAO {
         return await ProgressionsDAO.getProgressionsBelongingToCollection(collectionId);
       }
       // Collection does not have children and is empty.
-      console.log('empty');
       return [];
     } catch (e) {
       error(e);
-      return [];
+      return { error: e };
     }
   }
 
@@ -48,16 +49,40 @@ export default class CollectionsDAO {
       }).toArray();
     } catch (e) {
       error(e);
-      return [];
+      return { error: e };
     }
   }
 
   static async deleteCollection(collectionId) {
     try {
-      return await collections.deleteOne({ _id: ObjectId(collectionId) });
+      const collectionQueue = [await collections.findOne({ _id: ObjectId(collectionId) })];
+      const progressionQueue = [];
+      const deletions = [];
+      while (collectionQueue.length > 0) {
+        const parent = collectionQueue.shift();
+
+        const children = await CollectionsDAO.getEntries(parent._id);
+
+        if (parent.entry_type && parent.entry_type === 'collection') {
+          collectionQueue.push(...children);
+        } else {
+          progressionQueue.push(...children);
+        }
+
+        await collections.deleteOne({ _id: ObjectId(parent._id) });
+        deletions.push(parent);
+      }
+
+      while (progressionQueue.length > 0) {
+        deletions.push(await ProgressionsDAO.deleteProgression(
+          progressionQueue.shift()._id.toString(),
+        ));
+      }
+
+      return deletions;
     } catch (e) {
       error(e);
-      return [];
+      return { error: e };
     }
   }
 
@@ -71,7 +96,7 @@ export default class CollectionsDAO {
       }).toArray();
     } catch (e) {
       error(e);
-      return [];
+      return { error: e };
     }
   }
 
@@ -94,49 +119,51 @@ export default class CollectionsDAO {
       return userCollections;
     } catch (e) {
       error(e);
-      return [];
+      return { error: e };
     }
   }
 
-  // TODO make this method NOT return a response. IMPLEMENT
   static async addCollectionToCollection(id, entry) {
-    // Check if collection exists in db
-    const collection = await collections.findOne(Object(id));
-    if (!collection) {
-      throw new UserException('Collection with provided id does not exist.');
+    try { // Check if collection exists in db
+      const collection = await collections.findOne(Object(id));
+      if (!collection) {
+        return { error: 'Collection with provided id does not exist.' };
+      }
+
+      // Check that collection doesn't contain progressions
+      const { totalNumProgressions } = await ProgressionsDAO.getProgressions({
+        filter: {
+          parentId: id,
+        },
+      });
+
+      if (totalNumProgressions > 0) {
+        return { error: 'Cannot add collection to a collection containing progressions' };
+      }
+
+      // Check if collection already has collection with provided title
+      const results = await collections.find({ parent_collection_id: ObjectId(id) }).toArray();
+      if (results.find((element) => element.title === entry.collection.title)) {
+        return { error: `Collection ${id} already contains a collection titled ${entry.collection.title}.` };
+      }
+
+      // Add entry to collections
+
+      // Add provided collection as entry's parent
+
+      const newCollection = {
+        title: entry.collection.title,
+        parent_collection_id: ObjectId(id),
+        owner_id: collection.owner_id,
+      };
+      const result = await collections.insertOne(newCollection);
+      console.log(`A document was inserted into collections with the _id: ${result.insertedId}`);
+
+      return res.json(newCollection);
+    } catch (e) {
+      error(e);
+      return { error: e };
     }
-
-    // Check that collection doesn't contain progressions
-    const { totalNumProgressions } = await ProgressionsDAO.getProgressions({
-      filter: {
-        parentId: id,
-      },
-    });
-
-    if (totalNumProgressions > 0) {
-      throw new UserException('Cannot add collection to a collection containing progressions');
-    }
-
-    // Check if collection already has collection with provided title
-    const results = await collections.find({ parent_collection_id: ObjectId(id) }).toArray();
-    if (results.find((element) => element.title === entry.collection.title)) {
-      throw new UserException(`Collection ${id} already contains a collection titled ${entry.collection.title}.`);
-    }
-
-    // Check that entry has valid properties
-
-    // Add entry to collections
-
-    // Add provided collection as entry's parent
-
-    const newCollection = {
-      title: entry.collection.title,
-      parent_collection_id: ObjectId(id),
-      owner_id: collection.owner_id,
-    };
-    const result = await collections.insertOne(newCollection);
-    console.log(`A document was inserted into collections with the _id: ${result.insertedId}`);
-    return res.json(newCollection);
   }
 
   static async addProgressionToCollection(id, entry) {}

@@ -48,24 +48,34 @@ export default class CollectionsController {
     }
   };
 
-  // TODO check user token
   static apiPostCollectionEntry = async (req, res, next) => {
     try {
-      const { entry } = req.body;
+      const { entry, type } = req.body;
       const { id } = req.params;
+
+      const userToken = getTokenFrom(req);
+      const user = await User.decoded(userToken);
+
+      const { error } = user;
+
+      if (error) {
+        res.status(401).json({ error: error.message });
+        return;
+      }
 
       if (!entry) {
         res.status(400).json({ error: 'Request must contain a "entry" key' });
       }
 
-      let collectionResponse;
-
-      if (!entry.type) {
+      if (!type) {
         res.status(400).json({
-          error: `body must have type of either 
+          error: `body must have "type" of either
           "collection" or "progression"`,
         });
       }
+
+      let collectionResponse;
+
       if (entry.type === 'collection') {
         collectionResponse = await CollectionsDAO.addCollectionToCollection(id, entry);
       } else if (entry.type === 'progression') {

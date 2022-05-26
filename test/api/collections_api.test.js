@@ -108,8 +108,8 @@ describe('deleting collection', () => {
       .delete(`/api/v1/collections/${parentCollectionId}`)
       .expect(401);
 
-    const { error } = res.body;
-    expect(error).toBe('jwt must be provided');
+    // const { error } = res.body;
+    // expect(error).toBe('jwt must be provided');
   });
 
   test('user deletes only collection in their library', async () => {
@@ -120,6 +120,14 @@ describe('deleting collection', () => {
 
     const { collections } = res.body;
     expect(collections).toHaveLength(0);
+
+    const deletions = [];
+    deletions.push(await db.collection('collections').findOne({ title: 'The Strokes' }));
+    deletions.push(await db.collection('collections').findOne({ title: 'Trying Your Luck' }));
+    deletions.push(await db.collection('collections').findOne({ title: 'Last Nite' }));
+    deletions.push(await db.collection('progressions').findOne({ title: 'Trying Your Luck - Verse' }));
+
+    expect(deletions.filter((e) => e)).toHaveLength(0);
   });
 });
 
@@ -129,9 +137,7 @@ describe('creating collection entry', () => {
   let collectionOfCollections;
 
   beforeEach(async () => {
-    console.log(await db.collection('collections').find().toArray());
     let result = await db.collection('collections').findOne({ title: 'The Strokes' });
-    console.log(result);
     entryParent = result._id.toString();
 
     result = await db.collection('collections').findOne({ title: 'Last Nite' });
@@ -150,6 +156,16 @@ describe('creating collection entry', () => {
 
     const { error } = res.body;
     expect(error).toBe('Request must contain a "entry" key');
+  });
+
+  test('user must be logged in', async () => {
+    const res = await api
+      .post(`/api/v1/collections/${entryParent}`)
+      .send({ entry: {}, type: 'collection' })
+      .expect(401);
+
+    // const { error } = res.body;
+    // expect(error).toBe('jwt must be provided');
   });
 
   describe('entry\'s parent should be existing collection in user\'s library', () => {
@@ -179,16 +195,6 @@ describe('creating collection entry', () => {
       const { error } = res.body;
       expect(error).toBe('You cannot edit a public collection');
     });
-  });
-
-  test('user must be logged in', async () => {
-    const res = await api
-      .post(`/api/v1/collections/${entryParent}`)
-      .send({ entry: {} })
-      .expect(401);
-
-    const { error } = res.body;
-    expect(error).toBe('jwt must be provided');
   });
 
   describe('creating child collection', () => {

@@ -112,6 +112,17 @@ export default class ProgressionsDAO {
       return [];
     }
   }
+
+  static async deleteProgression(id) {
+    try {
+      const progression = await progressions.findOne({ _id: ObjectId(id) });
+      await progressions.deleteOne({ _id: ObjectId(id) });
+      return progression;
+    } catch (e) {
+      error(e);
+      return [];
+    }
+  }
 }
 
 /**
