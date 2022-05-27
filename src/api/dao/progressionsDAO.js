@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 
-import { error } from '../../utils/logger';
+import { error, info } from '../../utils/logger';
 
 const { dbName, NODE_ENV } = require('../../utils/config');
 
@@ -66,14 +66,10 @@ export default class ProgressionsDAO {
     const sort = [];
 
     if (filters) {
-      const { ownerId = null } = filters;
-      query.owner_id = ownerId ? ObjectId(ownerId) : { $exists: false };
       if (filters.parentId) {
         query.parent_collection_id = ObjectId(filters.parentId);
       }
-    } else {
-      query.owner_id = { $exists: false };
-    }
+    } 
 
     let cursor;
     try {
@@ -90,9 +86,9 @@ export default class ProgressionsDAO {
 
     try {
       const progressionsList = await displayCursor.toArray();
-      const totalNumProgs = page === 0 ? await progressions.countDocuments(query) : 0;
+      const totalNumProgressions = page === 0 ? await progressions.countDocuments(query) : 0;
 
-      return { progressionsList, totalNumProgs };
+      return { progressionsList, totalNumProgressions };
     } catch (e) {
       error(
         `Unable to convert cursor to array or problem counting documents, ${e}`,
@@ -113,6 +109,28 @@ export default class ProgressionsDAO {
     }
   }
 
+  static async createProgression({
+    title,
+    root,
+    chords,
+    owner_id,
+    parent_collection_id
+  }) {
+    try {
+      const newProgression = {title, root, chords}
+      if (owner_id) newProgression.owner_id = owner_id
+      if (parent_collection_id) newProgression.parent_collection_id = parent_collection_id
+      const result = await progressions.insertOne(newProgression)
+      info(`A document was inserted into collections with the _id: ${result.insertedId}`);
+      return newProgression
+      
+    } catch (e) {
+      error(e)
+      return {error: e}
+      
+    }
+  }
+
   static async deleteProgression(id) {
     try {
       const progression = await progressions.findOne({ _id: ObjectId(id) });
@@ -120,7 +138,7 @@ export default class ProgressionsDAO {
       return progression;
     } catch (e) {
       error(e);
-      return [];
+      return {error: e}
     }
   }
 }

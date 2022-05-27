@@ -42,6 +42,11 @@ export const collections = [
     entry_type: 'collection',
     owner_id: users.find(({ username }) => username === 'Liam Idrovo')._id,
   },
+  {
+    _id: generateId(),
+    title: 'The Marias',
+    owner_id: users.find(({ username }) => username === 'Liam Idrovo')._id,
+  }
 ];
 
 collections.push(

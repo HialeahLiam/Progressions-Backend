@@ -56,7 +56,7 @@ export default class CollectionsController {
       const userToken = getTokenFrom(req);
       const user = await User.decoded(userToken);
 
-      const { error } = user;
+      let { error } = user;
 
       if (error) {
         res.status(401).json({ error: error.message });
@@ -68,11 +68,8 @@ export default class CollectionsController {
         return;
       }
 
-      console.log('VALID ENTRY KEY');
 
-      console.log(type);
       if (type !== 'collection' && type !== 'progression') {
-        console.log('IF');
         res.status(400).json({
           error: `body must have "type" of either
           "collection" or "progression"`,
@@ -80,11 +77,8 @@ export default class CollectionsController {
         return;
       }
 
-      console.log('VALID TYPE');
 
       const ownerId = await CollectionsDAO.getOwnerId(parentId);
-      console.log('OWNERID');
-      console.log(ownerId);
       if (!ownerId) {
         res.status(404).json({ error: 'You cannot edit a public collection' });
         return;
@@ -93,21 +87,30 @@ export default class CollectionsController {
         res.status(404).json({ error: 'You are trying to edit a collection that does not belong to you.' });
         return;
       }
+
+      if(!entry.title) {
+        res.status(400).json({error: 'Your entry needs a title.'})
+        return
+      }
+
+
       let collectionResponse;
 
       if (type === 'collection') {
-        console.log("ABOUT to be caled")
         collectionResponse = await CollectionsDAO.addCollectionToCollection(parentId, entry);
-        console.log('COLLECTION ADDED');
       } else if (type === 'progression') {
         collectionResponse = await CollectionsDAO.addProgressionToCollection(parentId, entry);
       }
 
-      console.log(collectionResponse)
 
-      res.json({collection: collectionResponse});
+      if (collectionResponse.error) {
+        res.status(400).json({error: collectionResponse.error})
+        return
+      }
+
+
+      res.status(201).json({collection: collectionResponse});
     } catch (e) {
-      console.log('ERROR')
       next(e);
     }
   };

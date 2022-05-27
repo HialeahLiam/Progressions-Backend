@@ -140,7 +140,7 @@ describe('creating collection entry', () => {
     let result = await db.collection('collections').findOne({ title: 'The Strokes' });
     entryParent = result._id.toString();
 
-    result = await db.collection('collections').findOne({ title: 'Last Nite' });
+    result = await db.collection('collections').findOne({ title: 'Trying Your Luck' });
     collectionOfProgressions = result._id.toString();
 
     result = await db.collection('collections').findOne({ title: 'The Strokes' });
@@ -165,8 +165,35 @@ describe('creating collection entry', () => {
       .expect(401);
 
     // const { error } = res.body;
-    // expect(error).toBe('jwt must be provided');
+    // expect(error).toBe('jwt must be provided'); 
   });
+
+  test('first progression added to collection', async () => {
+    let parentCollection = await db.collection('collections').findOne({title: 'The Marias'});
+    await api
+    .post(`/api/v1/collections/${parentCollection._id.toString()}`)
+    .auth(loggedInUserToken, { type: 'bearer' })
+    .send({ entry: { title: 'Maria Prog', root: 0, chords: [[1,2,3],[2,3,4]]}, type: 'progression'})
+    .expect(201);
+
+     parentCollection = await db.collection('collections').findOne({title: 'The Marias'});
+     expect(parentCollection.entry_type).toBeTruthy()
+     expect(parentCollection.entry_type).toBe('progression')
+    })
+    
+    //TODO
+    test('first collection added to collection', async () => {
+      const {_id: id} = await db.collection('collections').findOne({title: 'The Marias'});
+      await api
+      .post(`/api/v1/collections/${id.toString()}`)
+      .auth(loggedInUserToken, { type: 'bearer' })
+      .send({ entry: {title: 'Carino'}, type: 'collection' })
+      .expect(201);
+
+      const parentCollection = await db.collection('collections').findOne({title: 'The Marias'});
+      expect(parentCollection.entry_type).toBeTruthy()
+      expect(parentCollection.entry_type).toBe('collection')
+  })
 
   describe('entry\'s parent should be existing collection in user\'s library', () => {
     test('parent collection cannot be in other users\'s library', async () => {
@@ -205,7 +232,7 @@ describe('creating collection entry', () => {
         .post(`/api/v1/collections/${collectionOfCollections}`)
         .send({ entry: newCollection, type: 'collection' })
         .auth(loggedInUserToken, { type: 'bearer' })
-        .expect(200);
+        .expect(201);
 
       let collection = await db.collection('collections').findOne({title: 'Is This It'})
       expect(collection).toBeTruthy()
@@ -231,7 +258,7 @@ describe('creating collection entry', () => {
         .expect(400);
 
       const { error } = res.body;
-      expect(error).toBe('Your collection needs a title.');
+      expect(error).toBe('Your entry needs a title.');
     });
   });
 
@@ -247,7 +274,7 @@ describe('creating collection entry', () => {
         .post(`/api/v1/collections/${collectionOfProgressions}`)
         .send({ entry: validProgression, type: 'progression' })
         .auth(loggedInUserToken, { type: 'bearer' })
-        .expect(200);
+        .expect(201);
 
      let progression = await db.collection('progressions').findOne({title: 'Last Nite - Chorus'})
       expect(progression).toBeTruthy()
@@ -278,7 +305,7 @@ describe('creating collection entry', () => {
         .expect(400);
 
       const { error } = res.body;
-      expect(error).toBe('Your progression needs a title.');
+      expect(error).toBe('Your entry needs a title.');
     });
 
     // TODO

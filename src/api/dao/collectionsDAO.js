@@ -1,10 +1,11 @@
 /* eslint-disable no-await-in-loop */
 import {  ObjectId } from 'bson';
-import { cookie } from 'express/lib/response';
+import res, { cookie } from 'express/lib/response';
 import { error, info } from '../../utils/logger';
 import { dbName, NODE_ENV } from '../../utils/config';
 import ProgressionsDAO from './progressionsDAO';
 import { UserException } from '../../utils/exceptions';
+import CollectionsController from '../controllers/collections.controller';
 
 let collections;
 
@@ -126,9 +127,6 @@ export default class CollectionsDAO {
   static async addCollectionToCollection(id, entry) {
     try { 
 
-      console.log("CALED")
-    console.log(id)
-    console.log(await collections.find().toArray())
 
       // Check if collection exists in db
       const parentCollection = await collections.findOne(ObjectId(id))
@@ -138,49 +136,50 @@ export default class CollectionsDAO {
 
       // Check that collection doesn't contain progressions
       const { totalNumProgressions } = await ProgressionsDAO.getProgressions({
-        filter: {
-          parentId: id,
+        filters: {
+          parentId: id
         },
       });
-      console.log("PROGRESSION CHECK")
 
       if (totalNumProgressions > 0) {
-        return { error: 'Cannot add collection to a collection containing progressions' };
+        return { error: 'You cannot add a collection to a collection already containing progressions.' };
       }
+      // Set entry_type for parent to collection in the case it is empty
+      await collections.updateOne(
+        {_id: ObjectId(id)},
+        {$set: {entry_type: 'collection'}}
+      )
 
       // Check if collection already has collection with provided title
-      console.log("CHECKING TITLE")
       const results = await collections.find({ parent_collection_id: ObjectId(id) }).toArray();
-      console.log("CHECKED")
-      console.log(results)
       
       if (results && results.find((element) => element.title === entry.title)) {
-        console.log("if")
         return { error: `Collection ${id} already contains a collection titled ${entry.collection.title}.` };
       }
 
-      // Add entry to collections
 
+      // Add entry to collections
       // Add provided collection as entry's parent
 
-      console.log("CREATING ")
       const newCollection = {
         title: entry.title,
         parent_collection_id: ObjectId(id),
         owner_id: parentCollection.owner_id,
       };
-      console.log("INSERTING CVOLLECTION")
       const result = await collections.insertOne(newCollection);
-      console.log("INSERTED")
       info(`A document was inserted into collections with the _id: ${result.insertedId}`);
 
       return newCollection;
     } catch (e) {
-      console.log(e)
       error(e);
       return { error: e };
     }
   }
+
+  // static async getEntryType(collectionId) {
+  //   const {entry_type}=  await collections.findOne(ObjectId(collectionId))
+  //   return entry_type
+  // }
 
   static async getOwnerId(collectionId) {
     try {
@@ -195,5 +194,50 @@ export default class CollectionsDAO {
     }
   }
 
-  static async addProgressionToCollection(id, entry) {}
+  static async addProgressionToCollection(id, entry) {
+   try { // Check if collection exists in db
+      const parentCollection = await collections.findOne(ObjectId(id))
+      if (!parentCollection) {
+        return { error: 'Collection with provided id does not exist.' };
+      }
+
+      // Check that collection doesn't contain collections
+
+      if (await collections.countDocuments({parent_collection_id: ObjectId(id)}) > 0) {
+
+        return { error: 'You cannot add a progression to a collection already containing collections.' };
+      }
+
+      // Set entry_type for parent to collection in the case it is empty
+       await collections.updateOne(
+        {_id: ObjectId(id)},
+        {$set: {entry_type: 'progression'}}
+      )
+
+      // Check if collection already has progress with provided title
+      const results = await CollectionsDAO.getEntries(id);
+      
+      if (results && results.find((element) => element.title === entry.title)) {
+        return { error: `Collection ${id} already contains a collection titled ${entry.collection.title}.` };
+      }
+
+       // Add entry to progression
+      // Add provided collection as entry's parent
+
+      const newProgression = {
+        title: entry.title,
+        root: entry.root,
+        chords: entry.chords,
+        parent_collection_id: ObjectId(id),
+        owner_id: parentCollection.owner_id,
+      };
+      const result = await ProgressionsDAO.createProgression(newProgression)
+
+
+      return result.error ? {error: result.error} : result;
+    } catch(e) {
+      error(e);
+      return {error: e}
+    }
+  }
 }
