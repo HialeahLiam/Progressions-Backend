@@ -10,10 +10,12 @@ let connection;
 let db;
 
 const setupDB = async () => {
+  console.log(1);
   const client = new MongoClient(globalThis.__MONGO_URI__, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
+  console.log(2)
   connection = await client.connect();
   db = await connection.db(globalThis.__MONGO_DB_NAME__);
   await CollectionsDAO.injectDB(connection);

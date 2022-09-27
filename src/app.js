@@ -5,6 +5,7 @@ import users from './api/routes/users.route.js';
 import progressions from './api/routes/progressions.route.js';
 import search from './api/routes/search.route.js';
 import middleware from './utils/middleware.js';
+import dev from './api/routes/dev.route.js'
 
 const app = express();
 
@@ -18,6 +19,10 @@ app.use('/api/v1/collections', collections);
 app.use('/api/v1/users', users);
 app.use('/api/v1/progressions', progressions);
 app.use('/api/v1/search', search);
+
+if (process.env.NODE_ENV === "development") {
+    app.use('/dev', dev)
+}
 
 // Middleware used after path implementations. Called only if request matches no endpoints.
 app.use(middleware.unknownEndpoint);
